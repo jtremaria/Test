@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code para FP&A - Casos de Uso</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .search-section {
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: #666;
+        }
+
+        .search-input:focus {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover {
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .use-case-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .use-case-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.08);
+            border-color: #667eea;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .card-category {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            white-space: nowrap;
+        }
+
+        .card-description {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            margin: 40px auto;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .modal-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .badge-category {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .badge-complexity {
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+        }
+
+        .badge-time {
+            background: rgba(40,167,69,0.2);
+            color: #28a745;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-section {
+            margin-bottom: 25px;
+        }
+
+        .modal-section h3 {
+            font-size: 1.1rem;
+            color: #667eea;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-section p {
+            color: #ccc;
+            line-height: 1.7;
+        }
+
+        .modal-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .modal-section li {
+            padding: 8px 0;
+            color: #aaa;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .modal-section li:last-child {
+            border-bottom: none;
+        }
+
+        .modal-section li::before {
+            content: "✓";
+            color: #28a745;
+        }
+
+        .prompt-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .prompt-box p {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid #667eea;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .productivity-gain {
+            background: linear-gradient(90deg, rgba(40,167,69,0.1), rgba(40,167,69,0.05));
+            border: 1px solid rgba(40,167,69,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .tools-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tool-tag {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .source-link {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .source-link:hover {
+            text-decoration: underline;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+
+        .no-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #888;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            margin-top: 40px;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .use-cases-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Claude Code para FP&A</h1>
+            <p class="subtitle">31 casos de uso listos para transformar tu trabajo en Financial Planning & Analysis</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">31</div>
+                    <div class="stat-label">Casos de Uso</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">Categorías</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">80%</div>
+                    <div class="stat-label">Ahorro de Tiempo</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="Buscar casos de uso... (ej: budget, forecast, excel)">
+            </div>
+            <div class="filters" id="filters">
+                <button class="filter-btn active" data-category="all">Todos</button>
+                <button class="filter-btn" data-category="budgeting">Presupuestos</button>
+                <button class="filter-btn" data-category="forecasting">Forecasting</button>
+                <button class="filter-btn" data-category="variance_analysis">Varianzas</button>
+                <button class="filter-btn" data-category="financial_modeling">Modelado</button>
+                <button class="filter-btn" data-category="reporting">Reportes</button>
+                <button class="filter-btn" data-category="data_integration">Datos</button>
+                <button class="filter-btn" data-category="scenario_planning">Escenarios</button>
+                <button class="filter-btn" data-category="automation">Automatización</button>
+                <button class="filter-btn" data-category="excel_integration">Excel</button>
+            </div>
+        </div>
+
+        <div class="use-cases-grid" id="useCasesGrid">
+            <!-- Cards will be inserted here -->
+        </div>
+
+        <div class="no-results" id="noResults" style="display: none;">
+            <h3>No se encontraron resultados</h3>
+            <p>Intenta con otras palabras clave o selecciona otra categoría</p>
+        </div>
+
+        <footer>
+            <p>Creado con Claude Code | Fuentes:
+                <a href="https://www.anthropic.com/news/advancing-claude-for-financial-services" target="_blank">Anthropic</a>,
+                <a href="https://fpa-trends.com" target="_blank">FP&A Trends</a>,
+                <a href="https://www.cubesoftware.com/blog/ai-for-fpa-financial-planning-analysis" target="_blank">Cube Software</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-close" id="modalClose">&times;</span>
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <div class="modal-badges" id="modalBadges"></div>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // Database of use cases
+        const useCases = [
+            // BUDGETING
+            {
+                id: "budget-001",
+                title: "Consolidación Automática de Presupuestos",
+                description: "Usa Claude Code para consolidar automáticamente presupuestos departamentales de múltiples archivos Excel, reconciliar envíos, identificar inconsistencias y generar un presupuesto corporativo unificado.",
+                category: "budgeting",
+                categoryName: "Presupuestos",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Reduce el tiempo de consolidación en 80%",
+                    "Detección automática de inconsistencias",
+                    "Formato de salida estandarizado",
+                    "Registro de auditoría de todos los cambios"
+                ],
+                prompts: [
+                    "Consolida todos los archivos de presupuesto en la carpeta /budgets, identifica departamentos con supuestos irreales y crea un reporte resumen",
+                    "Lee los envíos de presupuesto departamental y marca los que excedan la guía de crecimiento del 5%",
+                    "Crea un script Python para fusionar archivos de presupuesto trimestrales y resaltar varianzas mayores a $10,000"
+                ],
+                tools: ["Python", "openpyxl", "pandas", "Excel"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/advancing-claude-for-financial-services",
+                productivityGain: "80% de reducción en tiempo de consolidación"
+            },
+            {
+                id: "budget-002",
+                title: "Modelo de Presupuesto Basado en Drivers",
+                description: "Construye modelos de presupuesto sofisticados basados en drivers que traducen automáticamente supuestos operativos (crecimiento de clientes, volúmenes de producción, participación de mercado) en planes financieros completos.",
+                category: "budgeting",
+                categoryName: "Presupuestos",
+                complexity: "Avanzado",
+                time: "Días",
+                benefits: [
+                    "Ajustes dinámicos del presupuesto basados en drivers",
+                    "Mejor alineación entre operaciones y finanzas",
+                    "Análisis de escenarios más rápido",
+                    "Mejor precisión en pronósticos"
+                ],
+                prompts: [
+                    "Crea un modelo de presupuesto basado en drivers donde el revenue se calcula como: número de clientes × valor promedio de orden × frecuencia de compra",
+                    "Construye un modelo Excel que vincule el crecimiento de headcount con objetivos de revenue y cálculo automático de COGS",
+                    "Diseña una plantilla de presupuesto con drivers vinculados para métricas SaaS: ARR, churn, revenue de expansión"
+                ],
+                tools: ["Excel", "Python", "Financial modeling"],
+                source: "Cube Software",
+                sourceUrl: "https://www.cubesoftware.com/blog/ai-for-fpa-financial-planning-analysis",
+                productivityGain: "50% más rápido el ciclo de presupuesto"
+            },
+            {
+                id: "budget-003",
+                title: "Análisis de Presupuesto Base Cero",
+                description: "Implementa análisis de presupuesto base cero haciendo que Claude Code revise cada línea de gasto, cuestione asignaciones históricas y sugiera optimizaciones basadas en necesidades reales.",
+                category: "budgeting",
+                categoryName: "Presupuestos",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Identifica gastos innecesarios",
+                    "Reducción de costos basada en datos",
+                    "Mejor asignación de recursos",
+                    "Cuestiona el status quo del gasto"
+                ],
+                prompts: [
+                    "Analiza el presupuesto de marketing línea por línea e identifica items que no han mostrado ROI en los últimos 2 años",
+                    "Revisa todos los gastos G&A y marca items que han crecido más rápido que el revenue",
+                    "Crea una plantilla de presupuesto base cero para el departamento de IT con requisitos de justificación"
+                ],
+                tools: ["Excel", "Python", "pandas"],
+                source: "FP&A Trends",
+                sourceUrl: "https://fpa-trends.com/article/how-agentic-ai-powering-next-generation-fpa",
+                productivityGain: null
+            },
+            // FORECASTING
+            {
+                id: "forecast-001",
+                title: "Actualización Automática de Rolling Forecast",
+                description: "Crea scripts que actualizan automáticamente rolling forecasts con los últimos datos reales, recalculan proyecciones y resaltan cambios significativos respecto a pronósticos anteriores.",
+                category: "forecasting",
+                categoryName: "Forecasting",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Forecasts siempre actualizados",
+                    "Reducción de entrada manual de datos",
+                    "Marcado automático de varianzas",
+                    "Metodología consistente"
+                ],
+                prompts: [
+                    "Actualiza el modelo de rolling forecast con los datos reales de Q3 y extiende la proyección hasta Q4 del próximo año",
+                    "Crea un script Python que extraiga datos reales de nuestro data warehouse y actualice el archivo Excel de forecast semanalmente",
+                    "Construye un workflow automatizado que compare cada iteración de forecast y reporte cambios mayores al 5%"
+                ],
+                tools: ["Python", "Excel", "SQL", "pandas"],
+                source: "Cube Software",
+                sourceUrl: "https://www.cubesoftware.com/blog/ai-tools-for-fpa",
+                productivityGain: "Tiempo de preparación trimestral reducido a horas"
+            },
+            {
+                id: "forecast-002",
+                title: "Forecasting de Revenue con Machine Learning",
+                description: "Construye modelos de machine learning para pronóstico de revenue que analizan patrones históricos, estacionalidad y factores externos para generar predicciones más precisas.",
+                category: "forecasting",
+                categoryName: "Forecasting",
+                complexity: "Avanzado",
+                time: "Días",
+                benefits: [
+                    "Mejora del 15-30% en precisión de forecast",
+                    "Detección automática de patrones",
+                    "Ajuste de estacionalidad",
+                    "Intervalos de confianza incluidos"
+                ],
+                prompts: [
+                    "Crea un modelo de series de tiempo para pronosticar el revenue del próximo trimestre usando la librería Prophet",
+                    "Analiza 3 años de datos de ventas y construye un modelo que considere estacionalidad y tendencia",
+                    "Construye un modelo de pronóstico de revenue que incorpore indicadores macroeconómicos"
+                ],
+                tools: ["Python", "Prophet", "scikit-learn", "pandas"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/claude-for-financial-services",
+                productivityGain: "65% de equipos califican los forecasts con AI como buenos/excelentes vs 42% sin AI"
+            },
+            {
+                id: "forecast-003",
+                title: "Automatización de Forecast de Cash Flow",
+                description: "Automatiza el pronóstico de flujo de caja analizando aging de AR/AP, patrones de pago y variaciones estacionales para predecir posiciones de caja futuras.",
+                category: "forecasting",
+                categoryName: "Forecasting",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Mejor gestión de caja",
+                    "Alertas tempranas de déficit de caja",
+                    "Capital de trabajo optimizado",
+                    "Mejor timing de pagos a proveedores"
+                ],
+                prompts: [
+                    "Analiza el reporte de aging de AR y predice las cobranzas para los próximos 90 días basándote en patrones históricos de pago",
+                    "Crea un modelo de cash flow de 13 semanas que incorpore calendarios de AP y cobranzas esperadas",
+                    "Construye un modelo de cash flow que alerte sobre problemas potenciales de liquidez con 30 días de anticipación"
+                ],
+                tools: ["Excel", "Python", "SQL"],
+                source: "Oracle",
+                sourceUrl: "https://www.oracle.com/erp/ai-driven-financial-planning-and-analysis/",
+                productivityGain: null
+            },
+            {
+                id: "forecast-004",
+                title: "Forecast de Gastos con Análisis de Tendencias",
+                description: "Desarrolla modelos de pronóstico de gastos que identifican tendencias de gasto, detectan anomalías y proyectan costos futuros basándose en patrones históricos y compromisos conocidos.",
+                category: "forecasting",
+                categoryName: "Forecasting",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Proyecciones de gastos precisas",
+                    "Detección de anomalías",
+                    "Mejor gestión de costos",
+                    "Alertas tempranas de sobrecostos"
+                ],
+                prompts: [
+                    "Analiza los últimos 24 meses de gastos operativos y proyecta los costos del próximo año por categoría",
+                    "Identifica categorías de gastos con patrones de crecimiento anormales en el trimestre actual",
+                    "Crea un forecast de gastos que considere adiciones de headcount conocidas y renovaciones de contratos"
+                ],
+                tools: ["Python", "pandas", "Excel"],
+                source: "KPMG",
+                sourceUrl: "https://kpmg.com/us/en/articles/2025/future-of-fpa-with-ai.html",
+                productivityGain: null
+            },
+            // VARIANCE ANALYSIS
+            {
+                id: "variance-001",
+                title: "Generación Automática de Comentarios de Varianzas",
+                description: "Genera automáticamente explicaciones y comentarios de varianzas para reportes de budget vs actual, identificando causas raíz y sugiriendo acciones correctivas.",
+                category: "variance_analysis",
+                categoryName: "Varianzas",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Ahorra horas en explicaciones de varianzas",
+                    "Calidad consistente de comentarios",
+                    "Cierre de mes más rápido",
+                    "Mejor identificación de causas raíz"
+                ],
+                prompts: [
+                    "Analiza el reporte de budget vs actual y genera comentarios de varianza a nivel ejecutivo para items mayores a $50K",
+                    "Revisa las varianzas de Q3 e identifica los 5 principales drivers del déficit de revenue",
+                    "Genera explicaciones de varianza para el deck del board, enfocándote en items del puente de EBITDA"
+                ],
+                tools: ["Excel", "Python", "pandas"],
+                source: "Aleph",
+                sourceUrl: "https://www.getaleph.com/answers/ai-fpa-software-variance-detection",
+                productivityGain: "90% de reducción en tiempo de escritura de comentarios"
+            },
+            {
+                id: "variance-002",
+                title: "Monitoreo de Varianzas en Tiempo Real",
+                description: "Construye scripts de monitoreo que comparan continuamente datos reales contra budget/forecast y alertan al equipo cuando ocurren varianzas materiales.",
+                category: "variance_analysis",
+                categoryName: "Varianzas",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Identificación proactiva de problemas",
+                    "Respuesta más rápida a varianzas",
+                    "Menos sorpresas en cierre de mes",
+                    "Mejor control de costos"
+                ],
+                prompts: [
+                    "Crea un script Python que verifique las ventas diarias contra el forecast y alerte si estamos más de 10% por debajo",
+                    "Construye un dashboard de monitoreo que marque categorías de gastos que excedan el 90% del presupuesto mensual",
+                    "Configura alertas automatizadas cuando cualquier centro de costos exceda el 80% del presupuesto trimestral a mitad de mes"
+                ],
+                tools: ["Python", "SQL", "APIs", "Slack/Email"],
+                source: "Surfside Capital Advisors",
+                sourceUrl: "https://www.surfcapadvisors.com/2025/10/02/how-has-ai-changed-fpa/",
+                productivityGain: null
+            },
+            {
+                id: "variance-003",
+                title: "Descomposición Multi-Dimensional de Varianzas",
+                description: "Realiza análisis de varianzas sofisticado que descompone varianzas por múltiples dimensiones: precio/volumen, efectos de mix, impactos de moneda y diferencias de timing.",
+                category: "variance_analysis",
+                categoryName: "Varianzas",
+                complexity: "Avanzado",
+                time: "Días",
+                benefits: [
+                    "Comprensión más profunda de varianzas",
+                    "Separa factores controlables de no controlables",
+                    "Mejor evaluación de desempeño",
+                    "Insights más accionables"
+                ],
+                prompts: [
+                    "Descompón la varianza de margen bruto en efectos de precio, volumen y mix para cada línea de producto",
+                    "Analiza la varianza de revenue y separa el impacto de fluctuaciones de moneda del desempeño operativo",
+                    "Crea un waterfall de varianza mostrando la contribución de cada unidad de negocio y driver de varianza"
+                ],
+                tools: ["Excel", "Python", "pandas"],
+                source: "Abacum",
+                sourceUrl: "https://www.abacum.ai/blog/how-to-use-budget-vs-actuals-variance-analysis-to-improve-fp-a-outcomes",
+                productivityGain: null
+            },
+            // FINANCIAL MODELING
+            {
+                id: "model-001",
+                title: "Desarrollo de Modelo DCF",
+                description: "Construye o mejora modelos de valuación por flujos descontados (DCF) con análisis de sensibilidad automatizado y comparaciones de escenarios.",
+                category: "financial_modeling",
+                categoryName: "Modelado",
+                complexity: "Avanzado",
+                time: "Días",
+                benefits: [
+                    "Metodología de valuación consistente",
+                    "Tablas de sensibilidad automatizadas",
+                    "Comparaciones rápidas de escenarios",
+                    "Formato de salida profesional"
+                ],
+                prompts: [
+                    "Construye un modelo DCF para el target de adquisición con un período de proyección de 5 años y valor terminal",
+                    "Agrega análisis de sensibilidad al DCF mostrando impacto en valor de cambios en WACC y tasa de crecimiento terminal",
+                    "Crea una plantilla DCF con cálculo automático de WACC y toggles de escenarios"
+                ],
+                tools: ["Excel", "Python", "VBA"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/advancing-claude-for-financial-services",
+                productivityGain: "Claude pasó 5 de 7 niveles del Financial Modeling World Cup"
+            },
+            {
+                id: "model-002",
+                title: "Construcción de Modelo de Tres Estados",
+                description: "Crea modelos financieros integrados de tres estados (Estado de Resultados, Balance General, Flujo de Caja) con vínculos apropiados y manejo de referencias circulares.",
+                category: "financial_modeling",
+                categoryName: "Modelado",
+                complexity: "Avanzado",
+                time: "Días",
+                benefits: [
+                    "Integración apropiada de estados",
+                    "Balanceo automático",
+                    "Flexibilidad de escenarios",
+                    "Estructura lista para auditoría"
+                ],
+                prompts: [
+                    "Construye un modelo de tres estados con schedules de capital de trabajo y amortización de deuda",
+                    "Crea un modelo financiero integrado para una empresa SaaS con contabilidad de ingresos diferidos",
+                    "Debuggea mi modelo de tres estados - el balance no cuadra después de agregar el schedule de deuda"
+                ],
+                tools: ["Excel", "VBA"],
+                source: "FundamentalLabs Excel Agent",
+                sourceUrl: "https://www.anthropic.com/news/advancing-claude-for-financial-services",
+                productivityGain: "83% de precisión en tareas complejas de Excel"
+            },
+            {
+                id: "model-003",
+                title: "Desarrollo de Modelo LBO",
+                description: "Crea modelos de leveraged buyout (LBO) con schedules de deuda, análisis de retornos y sensibilidad a múltiplos de entrada/salida.",
+                category: "financial_modeling",
+                categoryName: "Modelado",
+                complexity: "Experto",
+                time: "Días",
+                benefits: [
+                    "Evaluación rápida de deals",
+                    "Optimización de retornos",
+                    "Análisis de capacidad de deuda",
+                    "Sensibilidad a supuestos clave"
+                ],
+                prompts: [
+                    "Construye un modelo LBO con tranches de deuda senior, mezzanine y equity",
+                    "Crea un análisis de retornos LBO con sensibilidad de IRR a múltiplo de entrada y timing de salida",
+                    "Agrega un schedule de deuda a mi modelo LBO con cash sweep y amortización obligatoria"
+                ],
+                tools: ["Excel", "VBA"],
+                source: "F9 Finance",
+                sourceUrl: "https://www.f9finance.com/claude-for-finance/",
+                productivityGain: null
+            },
+            {
+                id: "model-004",
+                title: "Debugging y Optimización de Fórmulas",
+                description: "Debuggea fórmulas complejas de Excel, identifica referencias circulares y optimiza el rendimiento del modelo mejorando la eficiencia de fórmulas.",
+                category: "financial_modeling",
+                categoryName: "Modelado",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Arregla fórmulas rotas rápidamente",
+                    "Mejora el rendimiento del modelo",
+                    "Reduce el tamaño del archivo",
+                    "Mayor transparencia de fórmulas"
+                ],
+                prompts: [
+                    "Debuggea esta fórmula SUMIFS que está retornando error #VALUE!",
+                    "Optimiza mi modelo - toma 30 segundos recalcular",
+                    "Encuentra y arregla todas las referencias circulares en mi modelo financiero",
+                    "Convierte estos IF anidados a un enfoque más limpio con INDEX/MATCH"
+                ],
+                tools: ["Excel", "VBA"],
+                source: "Claude in Excel",
+                sourceUrl: "https://claude.com/claude-in-excel",
+                productivityGain: null
+            },
+            // REPORTING
+            {
+                id: "report-001",
+                title: "Generación Automática de Reportes Gerenciales",
+                description: "Genera reportes gerenciales completos automáticamente desde datos financieros crudos, incluyendo análisis de varianzas, métricas KPI y comentarios ejecutivos.",
+                category: "reporting",
+                categoryName: "Reportes",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Formato de reporte consistente",
+                    "Producción de reportes más rápida",
+                    "Reducción de errores manuales",
+                    "Más tiempo para análisis"
+                ],
+                prompts: [
+                    "Crea un reporte gerencial mensual desde los datos del trial balance con P&L, balance y KPIs",
+                    "Genera un resumen ejecutivo para el board destacando los 3 principales puntos financieros del trimestre",
+                    "Construye una plantilla de reporte que se complete automáticamente con datos de nuestro export del ERP"
+                ],
+                tools: ["Excel", "Python", "pandas", "reportlab"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/claude-for-financial-services",
+                productivityGain: "NBIM logró 20% de ganancias de productividad (213,000 horas)"
+            },
+            {
+                id: "report-002",
+                title: "Creación de Dashboard de KPIs",
+                description: "Diseña y construye dashboards de KPIs que trackean métricas financieras y operativas con actualización automática de datos y visualización de tendencias.",
+                category: "reporting",
+                categoryName: "Reportes",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Visibilidad en tiempo real",
+                    "Analytics self-service",
+                    "Definiciones de métricas consistentes",
+                    "Accesibilidad móvil"
+                ],
+                prompts: [
+                    "Crea un dashboard Python mostrando tendencias de revenue, margen bruto e ingreso operativo",
+                    "Construye un dashboard Excel con formato condicional para indicadores de estado de KPIs",
+                    "Diseña un dashboard de métricas SaaS trackeando MRR, churn, CAC y LTV"
+                ],
+                tools: ["Python", "plotly", "Excel", "Power BI"],
+                source: "Data Studios",
+                sourceUrl: "https://www.datastudios.org/post/claude-and-spreadsheets-advanced-data-analysis-with-ai-in-2025",
+                productivityGain: null
+            },
+            {
+                id: "report-003",
+                title: "Automatización de Presentaciones para el Board",
+                description: "Automatiza la creación de presentaciones para el board extrayendo datos financieros, generando gráficos y completando slides con insights clave.",
+                category: "reporting",
+                categoryName: "Reportes",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Branding consistente",
+                    "Preparación de deck más rápida",
+                    "Actualizaciones dinámicas de gráficos",
+                    "Control de versiones"
+                ],
+                prompts: [
+                    "Crea un slide deck de PowerPoint con resultados financieros de Q3 y gráficos",
+                    "Actualiza la plantilla de presentación del board con los números del último cierre de mes",
+                    "Genera un slide de resumen financiero con gráfico waterfall para el puente de EBITDA"
+                ],
+                tools: ["Python", "python-pptx", "Excel"],
+                source: "Claude Code Interpreter",
+                sourceUrl: "https://simonwillison.net/2025/Sep/9/claude-code-interpreter/",
+                productivityGain: null
+            },
+            // DATA INTEGRATION
+            {
+                id: "data-001",
+                title: "Extracción y Transformación de Datos ERP",
+                description: "Construye scripts para extraer datos de sistemas ERP, transformarlos en formato listo para análisis y cargarlos en Excel o data warehouses.",
+                category: "data_integration",
+                categoryName: "Datos",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Extracción automatizada de datos",
+                    "Formatos de datos consistentes",
+                    "Reducción de entrada manual de datos",
+                    "Registro de auditoría"
+                ],
+                prompts: [
+                    "Crea un script Python para extraer datos de GL de nuestro export de SAP y formatear para el modelo de presupuesto",
+                    "Construye un pipeline ETL que extraiga datos de ventas de NetSuite y los cargue en nuestra plantilla de forecast",
+                    "Transforma el export de Oracle en un formato listo para pivot con la jerarquía de cuentas apropiada"
+                ],
+                tools: ["Python", "pandas", "SQL", "APIs"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/advancing-claude-for-financial-services",
+                productivityGain: null
+            },
+            {
+                id: "data-002",
+                title: "Automatización de Queries al Data Warehouse",
+                description: "Genera y ejecuta queries SQL contra Snowflake o Databricks para extraer datos financieros para análisis y reportes.",
+                category: "data_integration",
+                categoryName: "Datos",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Acceso self-service a datos",
+                    "Generación de queries complejas",
+                    "Recuperación de datos más rápida",
+                    "Menor dependencia de IT"
+                ],
+                prompts: [
+                    "Escribe un query SQL para extraer revenue mensual por categoría de producto de Snowflake para los últimos 2 años",
+                    "Crea un query que calcule el lifetime value del cliente desde nuestro data warehouse",
+                    "Genera SQL para extraer gastos por centro de costos con jerarquía de departamento desde Databricks"
+                ],
+                tools: ["SQL", "Python", "Snowflake", "Databricks"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/claude-for-financial-services",
+                productivityGain: "NBIM puede consultar su data warehouse Snowflake sin problemas"
+            },
+            {
+                id: "data-003",
+                title: "Integración de APIs para Datos de Mercado",
+                description: "Conéctate a APIs de datos financieros (LSEG, S&P Capital IQ, Bloomberg) para extraer datos de mercado en tiempo real para análisis y modelos.",
+                category: "data_integration",
+                categoryName: "Datos",
+                complexity: "Avanzado",
+                time: "Días",
+                benefits: [
+                    "Acceso a datos en tiempo real",
+                    "Feeds de datos automatizados",
+                    "Integración de múltiples fuentes",
+                    "Reducción de actualizaciones manuales"
+                ],
+                prompts: [
+                    "Construye un script Python para extraer precios de acciones diarios de Yahoo Finance para nuestro portafolio",
+                    "Crea una integración para obtener tipos de cambio FX y actualizar nuestro modelo de exposición cambiaria",
+                    "Conéctate a la API de S&P Capital IQ para extraer financieros de empresas comparables para benchmarking"
+                ],
+                tools: ["Python", "APIs", "requests", "pandas"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/advancing-claude-for-financial-services",
+                productivityGain: null
+            },
+            // SCENARIO PLANNING
+            {
+                id: "scenario-001",
+                title: "Modelado de Escenarios What-If",
+                description: "Construye modelos de escenarios flexibles que permitan cambiar rápidamente entre casos base, optimista y pesimista con recálculo automático.",
+                category: "scenario_planning",
+                categoryName: "Escenarios",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Comparación rápida de escenarios",
+                    "Mejor comprensión de riesgos",
+                    "Mejor soporte a decisiones",
+                    "Supuestos dinámicos"
+                ],
+                prompts: [
+                    "Agrega toggles de escenarios al modelo de presupuesto para casos base, optimista y pesimista",
+                    "Crea un análisis what-if mostrando el impacto de caídas de revenue del 10%, 20%, 30% en el runway de caja",
+                    "Construye tablas de comparación de escenarios para las tres opciones estratégicas que estamos evaluando"
+                ],
+                tools: ["Excel", "Python", "VBA"],
+                source: "Cube Software",
+                sourceUrl: "https://www.cubesoftware.com/blog/ai-for-fpa-financial-planning-analysis",
+                productivityGain: null
+            },
+            {
+                id: "scenario-002",
+                title: "Simulación Monte Carlo",
+                description: "Implementa simulaciones Monte Carlo para modelar incertidumbre y generar distribuciones de probabilidad para resultados financieros clave.",
+                category: "scenario_planning",
+                categoryName: "Escenarios",
+                complexity: "Avanzado",
+                time: "Días",
+                benefits: [
+                    "Incertidumbre cuantificada",
+                    "Distribuciones de probabilidad",
+                    "Decisiones ajustadas por riesgo",
+                    "Intervalos de confianza"
+                ],
+                prompts: [
+                    "Construye una simulación Monte Carlo para modelar el rango de posibles resultados de NPV para esta inversión",
+                    "Crea una simulación de cash flow con distribuciones de probabilidad para drivers clave de revenue y gastos",
+                    "Corre 10,000 iteraciones para modelar la probabilidad de alcanzar nuestro objetivo de revenue"
+                ],
+                tools: ["Python", "numpy", "@RISK", "Excel"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/claude-for-financial-services",
+                productivityGain: null
+            },
+            {
+                id: "scenario-003",
+                title: "Automatización de Análisis de Sensibilidad",
+                description: "Crea tablas de sensibilidad automatizadas y gráficos tornado mostrando el impacto de cambios en supuestos clave sobre resultados financieros.",
+                category: "scenario_planning",
+                categoryName: "Escenarios",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Identifica drivers clave de valor",
+                    "Análisis de impacto visual",
+                    "Mejor foco en supuestos",
+                    "Recálculo rápido"
+                ],
+                prompts: [
+                    "Crea una tabla de sensibilidad bidimensional mostrando IRR a través de diferentes múltiplos de entrada y años de salida",
+                    "Construye un gráfico tornado mostrando qué supuestos tienen el mayor impacto en el NPV del proyecto",
+                    "Genera análisis de sensibilidad para el modelo DCF variando WACC y tasas de crecimiento"
+                ],
+                tools: ["Excel", "Python", "matplotlib"],
+                source: "F9 Finance",
+                sourceUrl: "https://www.f9finance.com/claude-for-finance/",
+                productivityGain: null
+            },
+            // AUTOMATION
+            {
+                id: "automation-001",
+                title: "Automatización de Cierre de Mes",
+                description: "Automatiza tareas repetitivas de cierre de mes incluyendo preparación de asientos, generación de conciliaciones y seguimiento de checklist de cierre.",
+                category: "automation",
+                categoryName: "Automatización",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Ciclo de cierre más rápido",
+                    "Reducción de errores",
+                    "Procesos consistentes",
+                    "Mejor seguimiento"
+                ],
+                prompts: [
+                    "Crea un script para generar asientos de cierre de mes estándar desde nuestra plantilla de devengos",
+                    "Construye un checklist de cierre automatizado que trackee el estado de completitud y envíe recordatorios",
+                    "Automatiza el proceso de conciliación bancaria matcheando transacciones del extracto bancario"
+                ],
+                tools: ["Python", "Excel", "VBA"],
+                source: "Cube Software",
+                sourceUrl: "https://www.cubesoftware.com/blog/ai-for-fpa-financial-planning-analysis",
+                productivityGain: null
+            },
+            {
+                id: "automation-002",
+                title: "Distribución Programada de Reportes",
+                description: "Construye workflows automatizados para generar y distribuir reportes financieros de forma programada a los stakeholders.",
+                category: "automation",
+                categoryName: "Automatización",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Entrega consistente",
+                    "Sin distribución manual",
+                    "Registro de auditoría",
+                    "Self-service para stakeholders"
+                ],
+                prompts: [
+                    "Crea un script Python para generar el reporte semanal de ventas y enviarlo por email al equipo de liderazgo",
+                    "Construye una automatización para actualizar los datos del dashboard y publicar en Slack cada lunes en la mañana",
+                    "Configura generación programada de reportes de P&L para cada jefe de departamento"
+                ],
+                tools: ["Python", "cron", "email APIs", "Slack API"],
+                source: "Claude Code Best Practices",
+                sourceUrl: "https://www.anthropic.com/engineering/claude-code-best-practices",
+                productivityGain: null
+            },
+            {
+                id: "automation-003",
+                title: "Validación y Chequeos de Calidad de Datos",
+                description: "Implementa reglas de validación de datos automatizadas para detectar errores, inconsistencias y anomalías en datos financieros antes de que impacten los reportes.",
+                category: "automation",
+                categoryName: "Automatización",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Detección temprana de errores",
+                    "Mejor calidad de datos",
+                    "Reducción de retrabajo",
+                    "Confianza en auditorías"
+                ],
+                prompts: [
+                    "Crea reglas de validación para verificar que débitos igualen créditos en todos los asientos contables",
+                    "Construye un dashboard de calidad de datos que marque anomalías en los datos de transacciones diarias",
+                    "Implementa chequeos para asegurar que todos los campos requeridos estén completos antes del cierre"
+                ],
+                tools: ["Python", "pandas", "Great Expectations"],
+                source: "Anthropic Financial Services",
+                sourceUrl: "https://www.anthropic.com/news/advancing-claude-for-financial-services",
+                productivityGain: null
+            },
+            // EXCEL INTEGRATION
+            {
+                id: "excel-001",
+                title: "Estandarización de Plantillas Excel",
+                description: "Crea y mantiene plantillas Excel estandarizadas para presupuestos, forecasts y reportes con formato y estructura consistentes.",
+                category: "excel_integration",
+                categoryName: "Excel",
+                complexity: "Principiante",
+                time: "Horas",
+                benefits: [
+                    "Look and feel consistente",
+                    "Reducción de tiempo de formato",
+                    "Consolidación más fácil",
+                    "Mejor control de versiones"
+                ],
+                prompts: [
+                    "Crea una plantilla de P&L estandarizada con formato apropiado y resaltado condicional",
+                    "Construye una plantilla de input de presupuesto con validación de datos y fórmulas protegidas",
+                    "Diseña una plantilla de modelo financiero con código de colores consistente y navegación"
+                ],
+                tools: ["Excel", "VBA"],
+                source: "Claude in Excel",
+                sourceUrl: "https://claude.com/claude-in-excel",
+                productivityGain: null
+            },
+            {
+                id: "excel-002",
+                title: "Desarrollo de Macros VBA",
+                description: "Desarrolla macros VBA para automatizar tareas repetitivas de Excel, crear funciones personalizadas y construir herramientas interactivas.",
+                category: "excel_integration",
+                categoryName: "Excel",
+                complexity: "Intermedio",
+                time: "Horas",
+                benefits: [
+                    "Automatización de tareas",
+                    "Funcionalidad personalizada",
+                    "Ahorro de tiempo",
+                    "Reducción de errores"
+                ],
+                prompts: [
+                    "Escribe una macro VBA para formatear todas las hojas del libro de forma consistente",
+                    "Crea una función personalizada para calcular el costo promedio ponderado de capital",
+                    "Construye una macro para exportar cada hoja como un archivo PDF separado"
+                ],
+                tools: ["Excel", "VBA"],
+                source: "Claude in Excel",
+                sourceUrl: "https://claude.com/claude-in-excel",
+                productivityGain: null
+            },
+            {
+                id: "excel-003",
+                title: "Integración Excel-Python",
+                description: "Conecta Excel y Python para aprovechar analytics avanzados mientras mantienes una interfaz familiar de Excel para los usuarios finales.",
+                category: "excel_integration",
+                categoryName: "Excel",
+                complexity: "Avanzado",
+                time: "Días",
+                benefits: [
+                    "Lo mejor de ambos mundos",
+                    "Analytics avanzados en Excel",
+                    "Interfaz familiar",
+                    "Procesamiento escalable"
+                ],
+                prompts: [
+                    "Crea un script Python que lea datos de Excel, realice análisis ML y escriba los resultados de vuelta",
+                    "Construye una integración xlwings para correr modelos de forecasting Python desde botones de Excel",
+                    "Configura un workflow donde Excel dispare análisis Python y reciba resultados formateados"
+                ],
+                tools: ["Python", "xlwings", "openpyxl", "Excel"],
+                source: "Data Studios",
+                sourceUrl: "https://www.datastudios.org/post/claude-and-spreadsheets-advanced-data-analysis-with-ai-in-2025",
+                productivityGain: null
+            }
+        ];
+
+        const categoryNames = {
+            budgeting: "Presupuestos",
+            forecasting: "Forecasting",
+            variance_analysis: "Varianzas",
+            financial_modeling: "Modelado",
+            reporting: "Reportes",
+            data_integration: "Datos",
+            scenario_planning: "Escenarios",
+            compliance: "Compliance",
+            automation: "Automatización",
+            excel_integration: "Excel"
+        };
+
+        let currentFilter = 'all';
+        let searchQuery = '';
+
+        // Render use cases
+        function renderUseCases() {
+            const grid = document.getElementById('useCasesGrid');
+            const noResults = document.getElementById('noResults');
+
+            let filtered = useCases;
+
+            // Apply category filter
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(uc => uc.category === currentFilter);
+            }
+
+            // Apply search
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                filtered = filtered.filter(uc =>
+                    uc.title.toLowerCase().includes(query) ||
+                    uc.description.toLowerCase().includes(query) ||
+                    uc.tools.some(t => t.toLowerCase().includes(query)) ||
+                    uc.prompts.some(p => p.toLowerCase().includes(query))
+                );
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            noResults.style.display = 'none';
+            grid.innerHTML = filtered.map(uc => `
+                <div class="use-case-card" onclick="openModal('${uc.id}')">
+                    <div class="card-header">
+                        <h3 class="card-title">${uc.title}</h3>
+                        <span class="card-category">${uc.categoryName}</span>
+                    </div>
+                    <p class="card-description">${uc.description.substring(0, 150)}...</p>
+                    <div class="card-meta">
+                        <span>📊 ${uc.complexity}</span>
+                        <span>⏱️ ${uc.time}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Open modal
+        function openModal(id) {
+            const uc = useCases.find(u => u.id === id);
+            if (!uc) return;
+
+            document.getElementById('modalTitle').textContent = uc.title;
+            document.getElementById('modalBadges').innerHTML = `
+                <span class="badge badge-category">${uc.categoryName}</span>
+                <span class="badge badge-complexity">${uc.complexity}</span>
+                <span class="badge badge-time">${uc.time}</span>
+            `;
+
+            let bodyHTML = `
+                <div class="modal-section">
+                    <h3>📋 Descripción</h3>
+                    <p>${uc.description}</p>
+                </div>
+
+                <div class="modal-section">
+                    <h3>✅ Beneficios</h3>
+                    <ul>
+                        ${uc.benefits.map(b => `<li>${b}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <h3>💬 Prompts para Usar</h3>
+                    ${uc.prompts.map((p, i) => `
+                        <div class="prompt-box">
+                            <p>${p}</p>
+                            <button class="copy-btn" onclick="copyPrompt('${p.replace(/'/g, "\\'")}')">📋 Copiar</button>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="modal-section">
+                    <h3>🛠️ Herramientas</h3>
+                    <div class="tools-list">
+                        ${uc.tools.map(t => `<span class="tool-tag">${t}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+
+            if (uc.productivityGain) {
+                bodyHTML += `
+                    <div class="modal-section">
+                        <h3>📈 Ganancia de Productividad</h3>
+                        <div class="productivity-gain">${uc.productivityGain}</div>
+                    </div>
+                `;
+            }
+
+            bodyHTML += `
+                <div class="modal-section">
+                    <h3>📚 Fuente</h3>
+                    <p><a href="${uc.sourceUrl}" target="_blank" class="source-link">${uc.source}</a></p>
+                </div>
+            `;
+
+            document.getElementById('modalBody').innerHTML = bodyHTML;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        // Copy prompt
+        function copyPrompt(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('¡Prompt copiado! Pégalo en Claude Code.');
+            });
+        }
+
+        // Close modal
+        document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('modal').classList.remove('active');
+        });
+
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                document.getElementById('modal').classList.remove('active');
+            }
+        });
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderUseCases();
+        });
+
+        // Filters
+        document.getElementById('filters').addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn')) {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.category;
+                renderUseCases();
+            }
+        });
+
+        // Initial render
+        renderUseCases();
+    </script>
+</body>
+</html>
