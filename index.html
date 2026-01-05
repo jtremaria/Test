@@ -115,6 +115,19 @@
             padding: 4px 8px;
             border-radius: 4px;
         }
+        .url-full {
+            font-family: monospace;
+            font-size: 0.8em;
+            word-break: break-all;
+            background: #f8f9fa;
+            padding: 8px 10px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            max-height: 80px;
+            overflow-y: auto;
+            display: block;
+            margin-top: 8px;
+        }
         .count-badge {
             background: #0078d4;
             color: white;
@@ -641,10 +654,8 @@
                     <label>
                         <input type="radio" name="refOption" value="mostCommon" onchange="selectOption('mostCommon')">
                         <div class="option-content">
-                            <div class="option-title">Use Most Common Base</div>
-                            <div class="option-desc">
-                                ${topBase ? `<span class="url-preview">${escapeHtml(topBase.displayShort)}</span> (${topBase.count} links)` : 'N/A'}
-                            </div>
+                            <div class="option-title">Use Most Common Base <span style="font-weight:normal;color:#666;">(${topBase ? topBase.count : 0} links)</span></div>
+                            ${topBase ? `<div class="url-full">${escapeHtml(decodeForDisplay(topBase.base))}</div>` : '<div class="option-desc">N/A</div>'}
                         </div>
                     </label>
                 </div>
@@ -655,11 +666,12 @@
                         <div class="option-content">
                             <div class="option-title">Select from Detected Bases</div>
                             <div class="option-desc">Choose from the list of bases found in your presentation</div>
-                            <select id="baseDropdown" onchange="selectOption('dropdown')" ${state.uniqueBases.length === 0 ? 'disabled' : ''}>
+                            <select id="baseDropdown" onchange="selectOption('dropdown'); updateDropdownPreview();" ${state.uniqueBases.length === 0 ? 'disabled' : ''}>
                                 ${state.uniqueBases.slice(0, 10).map((b, i) =>
-                                    `<option value="${i}">${escapeHtml(b.displayShort)} (${b.count})</option>`
+                                    `<option value="${i}">${escapeHtml(decodeForDisplay(b.base))} (${b.count})</option>`
                                 ).join('')}
                             </select>
+                            <div id="dropdownPreview" class="url-full" style="margin-top:8px;">${state.uniqueBases.length > 0 ? escapeHtml(decodeForDisplay(state.uniqueBases[0].base)) : ''}</div>
                         </div>
                     </label>
                 </div>
@@ -742,6 +754,14 @@
             }
         }
 
+        function updateDropdownPreview() {
+            const idx = parseInt(document.getElementById('baseDropdown').value);
+            const previewDiv = document.getElementById('dropdownPreview');
+            if (previewDiv && state.uniqueBases[idx]) {
+                previewDiv.textContent = decodeForDisplay(state.uniqueBases[idx].base);
+            }
+        }
+
         async function extractFromSlide() {
             const slideNum = parseInt(document.getElementById('refSlideNum').value) || 2;
             const rId = document.getElementById('refRId').value.trim();
@@ -786,9 +806,9 @@
                     state.selectedBase = foundBase;
                     resultDiv.innerHTML = `
                         <span class="success-msg">Found base:</span>
-                        <div class="url-preview" style="margin-top:5px;">${escapeHtml(shortenUrl(decodeForDisplay(foundBase)))}</div>
+                        <div class="url-full" style="margin-top:5px;">${escapeHtml(decodeForDisplay(foundBase))}</div>
                     `;
-                    log(`Extracted base from slide ${slideNum}: ${shortenUrl(foundBase)}`, 'success');
+                    log(`Extracted base from slide ${slideNum}`, 'success');
                 } else {
                     resultDiv.innerHTML = `<span class="error-msg">No eligible link found in slide ${slideNum}${rId ? ` with rId="${rId}"` : ''}</span>`;
                     log(`No eligible link found in slide ${slideNum}`, 'warn');
