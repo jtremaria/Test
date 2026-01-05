@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharePoint Excel Link Fixer for PowerPoint</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        h1 { color: #0078d4; margin-bottom: 5px; }
+        .subtitle { color: #666; margin-bottom: 20px; }
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #0078d4;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+        .instructions h3 { margin-top: 0; color: #0078d4; }
+        .instructions ul { margin-bottom: 0; padding-left: 20px; }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            margin-top: 0;
+            font-size: 1.2em;
+            color: #444;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+        }
+        input[type="file"]:hover { border-color: #0078d4; }
+        button {
+            background: #0078d4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px 5px 5px 0;
+            transition: background 0.2s;
+        }
+        button:hover:not(:disabled) { background: #005a9e; }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        button.secondary {
+            background: #6c757d;
+        }
+        button.secondary:hover:not(:disabled) { background: #545b62; }
+        button.success {
+            background: #28a745;
+        }
+        button.success:hover:not(:disabled) { background: #1e7e34; }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover:not(:disabled) { background: #c82333; }
+        .hidden { display: none !important; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .status-consistent {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-mixed {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .audit-table th, .audit-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .audit-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .audit-table tr:hover { background: #f8f9fa; }
+        .url-preview {
+            font-family: monospace;
+            font-size: 0.85em;
+            word-break: break-all;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .count-badge {
+            background: #0078d4;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.85em;
+        }
+        .option-group {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .option-group.selected {
+            border-color: #0078d4;
+            background: #f0f8ff;
+        }
+        .option-group label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .option-group input[type="radio"] {
+            margin-top: 4px;
+        }
+        .option-content {
+            flex: 1;
+        }
+        .option-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .option-desc {
+            color: #666;
+            font-size: 0.9em;
+        }
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            margin-top: 8px;
+        }
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #0078d4;
+            box-shadow: 0 0 0 2px rgba(0,120,212,0.2);
+        }
+        .inline-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .inline-inputs > div { flex: 1; }
+        .inline-inputs label {
+            display: block;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .confirmation-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .confirmation-box h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .log-area {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85em;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .log-area .log-info { color: #4fc3f7; }
+        .log-area .log-success { color: #81c784; }
+        .log-area .log-warn { color: #ffb74d; }
+        .log-area .log-error { color: #e57373; }
+        .summary-stat {
+            display: inline-block;
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 5px 5px 5px 0;
+            font-size: 0.95em;
+        }
+        .summary-stat strong {
+            color: #0078d4;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+        }
+        .step-num {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ddd;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .step.active .step-num {
+            background: #0078d4;
+            color: white;
+        }
+        .step.completed .step-num {
+            background: #28a745;
+            color: white;
+        }
+        .step-label {
+            margin-left: 8px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .step.active .step-label {
+            color: #0078d4;
+            font-weight: 600;
+        }
+        .step-connector {
+            width: 40px;
+            height: 2px;
+            background: #ddd;
+            margin: 0 10px;
+        }
+        .step.completed + .step-connector {
+            background: #28a745;
+        }
+        .error-msg {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .success-msg {
+            color: #28a745;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SharePoint Excel Link Fixer</h1>
+    <p class="subtitle">Audit and fix SharePoint Excel links in PowerPoint presentations</p>
+
+    <div class="instructions">
+        <h3>How to Use</h3>
+        <ul>
+            <li><strong>Step 1:</strong> Upload a PowerPoint file (.pptx)</li>
+            <li><strong>Step 2:</strong> Click "Analyze" to scan for SharePoint Excel links</li>
+            <li><strong>Step 3:</strong> Review the audit report showing all detected Excel link bases</li>
+            <li><strong>Step 4:</strong> Choose to keep links as-is or change them to a single reference</li>
+            <li><strong>Step 5:</strong> Confirm your choice and download the result</li>
+        </ul>
+        <p style="margin-top:10px;margin-bottom:0;font-size:0.9em;color:#666;">
+            <strong>Note:</strong> This tool only modifies external SharePoint Excel links (oleObject relationships).
+            Sheet/range references after ".xlsx" are preserved.
+        </p>
+    </div>
+
+    <!-- Step 1: File Upload -->
+    <div class="section" id="section-upload">
+        <h2>1. Select PowerPoint File</h2>
+        <input type="file" id="fileInput" accept=".pptx">
+        <p id="fileInfo" class="hidden" style="margin-top:10px;color:#666;"></p>
+        <button id="btnAnalyze" disabled style="margin-top:15px;">Analyze</button>
+    </div>
+
+    <!-- Step 2: Audit Report -->
+    <div class="section hidden" id="section-audit">
+        <h2>2. Audit Report</h2>
+        <div id="auditContent"></div>
+    </div>
+
+    <!-- Step 3: Action Choice -->
+    <div class="section hidden" id="section-choice">
+        <h2>3. Choose Action</h2>
+        <div id="choiceContent"></div>
+    </div>
+
+    <!-- Step 4: Selection (if changing) -->
+    <div class="section hidden" id="section-selection">
+        <h2>4. Select Reference Base</h2>
+        <div id="selectionContent"></div>
+    </div>
+
+    <!-- Step 5: Confirmation -->
+    <div class="section hidden" id="section-confirm">
+        <h2>5. Confirm Changes</h2>
+        <div id="confirmContent"></div>
+    </div>
+
+    <!-- Step 6: Results -->
+    <div class="section hidden" id="section-results">
+        <h2>6. Results</h2>
+        <div id="resultsContent"></div>
+    </div>
+
+    <!-- Log Area -->
+    <div class="section">
+        <h2>Activity Log</h2>
+        <div class="log-area" id="logArea">Welcome! Upload a .pptx file to begin.</div>
+    </div>
+
+    <script>
+        // ========== STATE ==========
+        let state = {
+            originalFile: null,
+            fileName: '',
+            zip: null,
+            eligibleLinks: [],      // {filePath, target, base, tail, fullMatch}
+            uniqueBases: [],        // [{base, count, displayShort}]
+            selectedBase: null,
+            selectedOption: null,   // 'mostCommon', 'dropdown', 'custom', 'slideRef'
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const fileInput = document.getElementById('fileInput');
+        const btnAnalyze = document.getElementById('btnAnalyze');
+        const fileInfo = document.getElementById('fileInfo');
+        const logArea = document.getElementById('logArea');
+        const sectionAudit = document.getElementById('section-audit');
+        const sectionChoice = document.getElementById('section-choice');
+        const sectionSelection = document.getElementById('section-selection');
+        const sectionConfirm = document.getElementById('section-confirm');
+        const sectionResults = document.getElementById('section-results');
+
+        // ========== LOGGING ==========
+        function log(msg, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const span = document.createElement('span');
+            span.className = `log-${type}`;
+            span.textContent = `[${timestamp}] ${msg}\n`;
+            logArea.appendChild(span);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function clearLog() {
+            logArea.innerHTML = '';
+        }
+
+        // ========== UTILITIES ==========
+        function shortenUrl(url, maxLen = 60) {
+            if (url.length <= maxLen) return url;
+            const start = url.substring(0, 30);
+            const end = url.substring(url.length - 25);
+            return `${start}...${end}`;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Decode XML entities for display only (not for processing)
+        function decodeForDisplay(str) {
+            return str
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&apos;/g, "'");
+        }
+
+        // Extract base and tail from a Target URL
+        function extractBaseAndTail(target) {
+            const xlsxIndex = target.toLowerCase().indexOf('.xlsx');
+            if (xlsxIndex === -1) return null;
+            const endOfXlsx = xlsxIndex + 5; // ".xlsx" is 5 chars
+            const base = target.substring(0, endOfXlsx);
+            const tail = target.substring(endOfXlsx);
+            return { base, tail };
+        }
+
+        // Check if a Relationship tag is eligible
+        function isEligibleRelationship(relTag) {
+            // Must have Type containing oleObject
+            if (!/Type\s*=\s*["'][^"']*oleObject[^"']*["']/i.test(relTag)) return false;
+            // Must have TargetMode="External"
+            if (!/TargetMode\s*=\s*["']External["']/i.test(relTag)) return false;
+            // Extract Target value
+            const targetMatch = relTag.match(/Target\s*=\s*["']([^"']*)["']/i);
+            if (!targetMatch) return false;
+            const target = targetMatch[1];
+            // Must contain sharepoint.com and .xlsx
+            if (!/sharepoint\.com/i.test(target)) return false;
+            if (!/\.xlsx/i.test(target)) return false;
+            return true;
+        }
+
+        // ========== CORE LOGIC ==========
+        async function analyzeFile() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            state.originalFile = file;
+            state.fileName = file.name.replace(/\.pptx$/i, '');
+            state.eligibleLinks = [];
+            state.uniqueBases = [];
+            state.selectedBase = null;
+
+            log(`Loading file: ${file.name}`, 'info');
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                state.zip = await JSZip.loadAsync(arrayBuffer);
+                log('File loaded successfully', 'success');
+
+                // Find all .rels files in scope
+                const relsFiles = [];
+                const scopePaths = ['ppt/slides/_rels/', 'ppt/charts/_rels/', 'ppt/_rels/'];
+
+                state.zip.forEach((relativePath, zipEntry) => {
+                    if (zipEntry.dir) return;
+                    if (!relativePath.endsWith('.rels')) return;
+                    for (const scope of scopePaths) {
+                        if (relativePath.startsWith(scope)) {
+                            relsFiles.push(relativePath);
+                            break;
+                        }
+                    }
+                });
+
+                log(`Found ${relsFiles.length} .rels files in scope`, 'info');
+
+                // Parse each .rels file
+                for (const filePath of relsFiles) {
+                    const content = await state.zip.file(filePath).async('string');
+
+                    // Find all Relationship tags
+                    const relRegex = /<Relationship\s[^>]*\/?>/gi;
+                    let match;
+                    while ((match = relRegex.exec(content)) !== null) {
+                        const relTag = match[0];
+                        if (isEligibleRelationship(relTag)) {
+                            const targetMatch = relTag.match(/Target\s*=\s*["']([^"']*)["']/i);
+                            const target = targetMatch[1];
+                            const extracted = extractBaseAndTail(target);
+                            if (extracted) {
+                                state.eligibleLinks.push({
+                                    filePath,
+                                    target,
+                                    base: extracted.base,
+                                    tail: extracted.tail,
+                                    fullMatch: relTag
+                                });
+                            }
+                        }
+                    }
+                }
+
+                log(`Found ${state.eligibleLinks.length} eligible SharePoint Excel links`, 'success');
+
+                // Calculate unique bases
+                const baseCount = {};
+                for (const link of state.eligibleLinks) {
+                    baseCount[link.base] = (baseCount[link.base] || 0) + 1;
+                }
+
+                state.uniqueBases = Object.entries(baseCount)
+                    .map(([base, count]) => ({
+                        base,
+                        count,
+                        displayShort: shortenUrl(decodeForDisplay(base))
+                    }))
+                    .sort((a, b) => b.count - a.count);
+
+                log(`Found ${state.uniqueBases.length} unique Excel base URL(s)`, 'info');
+
+                // Show audit report
+                showAuditReport();
+
+            } catch (err) {
+                log(`Error: ${err.message}`, 'error');
+                console.error(err);
+            }
+        }
+
+        function showAuditReport() {
+            sectionAudit.classList.remove('hidden');
+            sectionChoice.classList.add('hidden');
+            sectionSelection.classList.add('hidden');
+            sectionConfirm.classList.add('hidden');
+            sectionResults.classList.add('hidden');
+
+            const total = state.eligibleLinks.length;
+            const uniqueCount = state.uniqueBases.length;
+            const isConsistent = uniqueCount <= 1;
+            const topBase = state.uniqueBases[0];
+            const dominanceRatio = topBase ? (topBase.count / total * 100).toFixed(1) : 0;
+
+            let html = `
+                <div style="margin-bottom:15px;">
+                    <span class="summary-stat"><strong>${total}</strong> eligible links found</span>
+                    <span class="summary-stat"><strong>${uniqueCount}</strong> unique Excel base(s)</span>
+                    <span class="status-badge ${isConsistent ? 'status-consistent' : 'status-mixed'}">
+                        ${isConsistent ? 'CONSISTENT' : 'MIXED'}
+                    </span>
+                </div>
+            `;
+
+            if (total === 0) {
+                html += `<p>No eligible SharePoint Excel links were found in this presentation.</p>`;
+                document.getElementById('auditContent').innerHTML = html;
+                return;
+            }
+
+            html += `
+                <p style="color:#666;font-size:0.9em;">
+                    ${isConsistent
+                        ? 'All links point to the same Excel file base.'
+                        : `Multiple Excel bases detected. Top base accounts for ${dominanceRatio}% of links.`}
+                </p>
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Count</th>
+                            <th>Excel Base URL (up to .xlsx)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            for (const item of state.uniqueBases.slice(0, 10)) {
+                html += `
+                    <tr>
+                        <td><span class="count-badge">${item.count}</span></td>
+                        <td><span class="url-preview" title="${escapeHtml(decodeForDisplay(item.base))}">${escapeHtml(item.displayShort)}</span></td>
+                    </tr>
+                `;
+            }
+
+            if (state.uniqueBases.length > 10) {
+                html += `<tr><td colspan="2" style="color:#666;font-style:italic;">...and ${state.uniqueBases.length - 10} more</td></tr>`;
+            }
+
+            html += `</tbody></table>`;
+            document.getElementById('auditContent').innerHTML = html;
+
+            // Show choice section
+            showChoiceSection();
+        }
+
+        function showChoiceSection() {
+            sectionChoice.classList.remove('hidden');
+
+            const total = state.eligibleLinks.length;
+
+            let html = `
+                <p>I found <strong>${total}</strong> eligible SharePoint Excel link(s). What would you like to do?</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+                    <button class="secondary" onclick="keepAsIs()">Keep As-Is</button>
+                    <button onclick="showSelectionSection()">Change Links</button>
+                </div>
+            `;
+
+            document.getElementById('choiceContent').innerHTML = html;
+        }
+
+        function keepAsIs() {
+            sectionSelection.classList.add('hidden');
+            sectionConfirm.classList.add('hidden');
+            sectionResults.classList.remove('hidden');
+
+            log('User chose to keep links unchanged', 'info');
+
+            let html = `
+                <p style="color:#28a745;font-weight:bold;">No changes were made to the file.</p>
+                <p>You can download an unchanged copy of your presentation:</p>
+                <button class="success" onclick="downloadUnchanged()">Download Unchanged Copy</button>
+            `;
+
+            document.getElementById('resultsContent').innerHTML = html;
+        }
+
+        async function downloadUnchanged() {
+            log('Generating unchanged copy...', 'info');
+            try {
+                const blob = await state.zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${state.fileName}_unchanged.pptx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                log('Download started: ' + a.download, 'success');
+            } catch (err) {
+                log('Error generating file: ' + err.message, 'error');
+            }
+        }
+
+        function showSelectionSection() {
+            sectionSelection.classList.remove('hidden');
+            sectionConfirm.classList.add('hidden');
+            sectionResults.classList.add('hidden');
+
+            const topBase = state.uniqueBases[0];
+
+            let html = `
+                <p>Choose which Excel base URL all links should point to:</p>
+
+                <div class="option-group" id="opt-mostCommon">
+                    <label>
+                        <input type="radio" name="refOption" value="mostCommon" onchange="selectOption('mostCommon')">
+                        <div class="option-content">
+                            <div class="option-title">Use Most Common Base</div>
+                            <div class="option-desc">
+                                ${topBase ? `<span class="url-preview">${escapeHtml(topBase.displayShort)}</span> (${topBase.count} links)` : 'N/A'}
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="option-group" id="opt-dropdown">
+                    <label>
+                        <input type="radio" name="refOption" value="dropdown" onchange="selectOption('dropdown')">
+                        <div class="option-content">
+                            <div class="option-title">Select from Detected Bases</div>
+                            <div class="option-desc">Choose from the list of bases found in your presentation</div>
+                            <select id="baseDropdown" onchange="selectOption('dropdown')" ${state.uniqueBases.length === 0 ? 'disabled' : ''}>
+                                ${state.uniqueBases.slice(0, 10).map((b, i) =>
+                                    `<option value="${i}">${escapeHtml(b.displayShort)} (${b.count})</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="option-group" id="opt-custom">
+                    <label>
+                        <input type="radio" name="refOption" value="custom" onchange="selectOption('custom')">
+                        <div class="option-content">
+                            <div class="option-title">Paste Custom Base URL</div>
+                            <div class="option-desc">Enter a new base URL ending with .xlsx</div>
+                            <input type="text" id="customBase" placeholder="https://company.sharepoint.com/.../file.xlsx" oninput="selectOption('custom')">
+                            <div id="customBaseError" class="error-msg hidden"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="option-group" id="opt-slideRef">
+                    <label>
+                        <input type="radio" name="refOption" value="slideRef" onchange="selectOption('slideRef')">
+                        <div class="option-content">
+                            <div class="option-title">Extract from Slide Reference</div>
+                            <div class="option-desc">Get the base URL from a specific slide's .rels file</div>
+                            <div class="inline-inputs">
+                                <div>
+                                    <label for="refSlideNum">Slide Number</label>
+                                    <input type="number" id="refSlideNum" value="2" min="1" onchange="selectOption('slideRef')">
+                                </div>
+                                <div>
+                                    <label for="refRId">rId (optional)</label>
+                                    <input type="text" id="refRId" placeholder="e.g., rId3" onchange="selectOption('slideRef')">
+                                </div>
+                            </div>
+                            <button class="secondary" style="margin-top:10px;" onclick="extractFromSlide()">Extract Base</button>
+                            <div id="slideRefResult" style="margin-top:10px;"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-top:20px;">
+                    <button onclick="proceedToConfirm()">Continue to Confirmation</button>
+                    <button class="secondary" onclick="goBackToChoice()">Back</button>
+                </div>
+            `;
+
+            document.getElementById('selectionContent').innerHTML = html;
+
+            // Auto-select most common if available
+            if (topBase) {
+                document.querySelector('input[value="mostCommon"]').checked = true;
+                selectOption('mostCommon');
+            }
+        }
+
+        function selectOption(option) {
+            state.selectedOption = option;
+
+            // Update visual selection
+            document.querySelectorAll('.option-group').forEach(el => el.classList.remove('selected'));
+            document.getElementById('opt-' + option).classList.add('selected');
+
+            // Update radio
+            const radio = document.querySelector(`input[value="${option}"]`);
+            if (radio) radio.checked = true;
+
+            // Determine selected base
+            switch (option) {
+                case 'mostCommon':
+                    state.selectedBase = state.uniqueBases[0]?.base || null;
+                    break;
+                case 'dropdown':
+                    const idx = parseInt(document.getElementById('baseDropdown').value);
+                    state.selectedBase = state.uniqueBases[idx]?.base || null;
+                    break;
+                case 'custom':
+                    state.selectedBase = document.getElementById('customBase').value.trim();
+                    break;
+                case 'slideRef':
+                    // Will be set by extractFromSlide()
+                    break;
+            }
+        }
+
+        async function extractFromSlide() {
+            const slideNum = parseInt(document.getElementById('refSlideNum').value) || 2;
+            const rId = document.getElementById('refRId').value.trim();
+            const resultDiv = document.getElementById('slideRefResult');
+
+            const relsPath = `ppt/slides/_rels/slide${slideNum}.xml.rels`;
+            const file = state.zip.file(relsPath);
+
+            if (!file) {
+                resultDiv.innerHTML = `<span class="error-msg">File not found: ${relsPath}</span>`;
+                log(`Slide reference file not found: ${relsPath}`, 'warn');
+                return;
+            }
+
+            try {
+                const content = await file.async('string');
+                const relRegex = /<Relationship\s[^>]*\/?>/gi;
+                let match;
+                let foundBase = null;
+
+                while ((match = relRegex.exec(content)) !== null) {
+                    const relTag = match[0];
+                    if (!isEligibleRelationship(relTag)) continue;
+
+                    // If rId specified, check it matches
+                    if (rId) {
+                        const idMatch = relTag.match(/Id\s*=\s*["']([^"']*)["']/i);
+                        if (!idMatch || idMatch[1] !== rId) continue;
+                    }
+
+                    const targetMatch = relTag.match(/Target\s*=\s*["']([^"']*)["']/i);
+                    if (targetMatch) {
+                        const extracted = extractBaseAndTail(targetMatch[1]);
+                        if (extracted) {
+                            foundBase = extracted.base;
+                            break;
+                        }
+                    }
+                }
+
+                if (foundBase) {
+                    state.selectedBase = foundBase;
+                    resultDiv.innerHTML = `
+                        <span class="success-msg">Found base:</span>
+                        <div class="url-preview" style="margin-top:5px;">${escapeHtml(shortenUrl(decodeForDisplay(foundBase)))}</div>
+                    `;
+                    log(`Extracted base from slide ${slideNum}: ${shortenUrl(foundBase)}`, 'success');
+                } else {
+                    resultDiv.innerHTML = `<span class="error-msg">No eligible link found in slide ${slideNum}${rId ? ` with rId="${rId}"` : ''}</span>`;
+                    log(`No eligible link found in slide ${slideNum}`, 'warn');
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<span class="error-msg">Error reading file: ${err.message}</span>`;
+                log(`Error reading slide reference: ${err.message}`, 'error');
+            }
+        }
+
+        function goBackToChoice() {
+            sectionSelection.classList.add('hidden');
+        }
+
+        function proceedToConfirm() {
+            // Validate selection
+            const errorDiv = document.getElementById('customBaseError');
+            if (errorDiv) errorDiv.classList.add('hidden');
+
+            if (!state.selectedOption) {
+                alert('Please select an option.');
+                return;
+            }
+
+            if (state.selectedOption === 'custom') {
+                const customVal = document.getElementById('customBase').value.trim();
+                if (!customVal) {
+                    errorDiv.textContent = 'Please enter a URL.';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                if (!/\.xlsx/i.test(customVal)) {
+                    errorDiv.textContent = 'URL must contain .xlsx';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                state.selectedBase = customVal;
+            }
+
+            if (!state.selectedBase) {
+                alert('No valid base URL selected. Please try again.');
+                return;
+            }
+
+            showConfirmSection();
+        }
+
+        function showConfirmSection() {
+            sectionConfirm.classList.remove('hidden');
+            sectionResults.classList.add('hidden');
+
+            const linksToChange = state.eligibleLinks.filter(l => l.base !== state.selectedBase).length;
+
+            let html = `
+                <div class="confirmation-box">
+                    <h3>Confirm Your Changes</h3>
+                    <p><strong>Reference Base URL:</strong></p>
+                    <div class="url-preview" style="margin:10px 0;padding:10px;">${escapeHtml(decodeForDisplay(state.selectedBase))}</div>
+                    <p><strong>What will happen:</strong></p>
+                    <ul>
+                        <li>All <strong>${state.eligibleLinks.length}</strong> eligible external SharePoint Excel links will be updated</li>
+                        <li><strong>${linksToChange}</strong> link(s) will have their base URL changed</li>
+                        <li>Each link's tail after .xlsx (sheet/range reference) will be <strong>preserved</strong></li>
+                    </ul>
+                </div>
+                <div style="margin-top:15px;">
+                    <button class="success" onclick="applyFix()">Apply Fix</button>
+                    <button class="secondary" onclick="cancelConfirm()">Cancel</button>
+                </div>
+            `;
+
+            document.getElementById('confirmContent').innerHTML = html;
+            log('Awaiting user confirmation to apply changes...', 'info');
+        }
+
+        function cancelConfirm() {
+            sectionConfirm.classList.add('hidden');
+            log('User cancelled the operation', 'warn');
+        }
+
+        async function applyFix() {
+            log('Applying fixes...', 'info');
+
+            const modifiedFiles = new Set();
+            let targetsChanged = 0;
+            const modifiedPaths = [];
+
+            try {
+                // Group links by file
+                const linksByFile = {};
+                for (const link of state.eligibleLinks) {
+                    if (!linksByFile[link.filePath]) {
+                        linksByFile[link.filePath] = [];
+                    }
+                    linksByFile[link.filePath].push(link);
+                }
+
+                // Process each file
+                for (const [filePath, links] of Object.entries(linksByFile)) {
+                    let content = await state.zip.file(filePath).async('string');
+                    let fileModified = false;
+
+                    for (const link of links) {
+                        // Build new target: new base + original tail
+                        const newTarget = state.selectedBase + link.tail;
+
+                        if (newTarget !== link.target) {
+                            // Replace in the content - be very careful to only replace the exact Target value
+                            // We search for the exact Target="oldValue" and replace with Target="newValue"
+                            const oldTargetAttr = `Target="${link.target}"`;
+                            const newTargetAttr = `Target="${newTarget}"`;
+
+                            // Also handle single quotes
+                            const oldTargetAttrSingle = `Target='${link.target}'`;
+                            const newTargetAttrSingle = `Target='${newTarget}'`;
+
+                            if (content.includes(oldTargetAttr)) {
+                                content = content.replace(oldTargetAttr, newTargetAttr);
+                                targetsChanged++;
+                                fileModified = true;
+                            } else if (content.includes(oldTargetAttrSingle)) {
+                                content = content.replace(oldTargetAttrSingle, newTargetAttrSingle);
+                                targetsChanged++;
+                                fileModified = true;
+                            }
+                        }
+                    }
+
+                    if (fileModified) {
+                        state.zip.file(filePath, content);
+                        modifiedFiles.add(filePath);
+                        if (modifiedPaths.length < 30) {
+                            modifiedPaths.push(filePath);
+                        }
+                        log(`Modified: ${filePath}`, 'success');
+                    }
+                }
+
+                log(`Fix complete: ${targetsChanged} target(s) changed in ${modifiedFiles.size} file(s)`, 'success');
+
+                // Show results
+                showResults(targetsChanged, modifiedFiles.size, modifiedPaths);
+
+            } catch (err) {
+                log(`Error applying fixes: ${err.message}`, 'error');
+                console.error(err);
+            }
+        }
+
+        function showResults(targetsChanged, filesModified, modifiedPaths) {
+            sectionResults.classList.remove('hidden');
+
+            let html = `
+                <div style="margin-bottom:15px;">
+                    <span class="summary-stat"><strong>${targetsChanged}</strong> links changed</span>
+                    <span class="summary-stat"><strong>${filesModified}</strong> files modified</span>
+                </div>
+            `;
+
+            if (modifiedPaths.length > 0) {
+                html += `
+                    <p><strong>Modified files:</strong></p>
+                    <ul style="font-family:monospace;font-size:0.85em;max-height:150px;overflow-y:auto;">
+                        ${modifiedPaths.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+                    </ul>
+                `;
+            }
+
+            html += `
+                <div style="margin-top:20px;">
+                    <button class="success" onclick="downloadFixed()">Download Fixed File</button>
+                </div>
+            `;
+
+            document.getElementById('resultsContent').innerHTML = html;
+        }
+
+        async function downloadFixed() {
+            log('Generating fixed file...', 'info');
+            try {
+                const blob = await state.zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${state.fileName}_fixed.pptx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                log('Download started: ' + a.download, 'success');
+            } catch (err) {
+                log('Error generating file: ' + err.message, 'error');
+            }
+        }
+
+        // ========== EVENT LISTENERS ==========
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) {
+                btnAnalyze.disabled = false;
+                fileInfo.classList.remove('hidden');
+                fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                log(`File selected: ${file.name}`, 'info');
+
+                // Reset UI
+                sectionAudit.classList.add('hidden');
+                sectionChoice.classList.add('hidden');
+                sectionSelection.classList.add('hidden');
+                sectionConfirm.classList.add('hidden');
+                sectionResults.classList.add('hidden');
+            } else {
+                btnAnalyze.disabled = true;
+                fileInfo.classList.add('hidden');
+            }
+        });
+
+        btnAnalyze.addEventListener('click', () => {
+            analyzeFile();
+        });
+    </script>
+</body>
+</html>
