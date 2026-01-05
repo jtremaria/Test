@@ -1,0 +1,9 @@
+# FP&A Use Case Finder - Requirements
+# =====================================
+
+# No external dependencies required for core functionality
+# The application uses only Python standard library
+
+# Optional dependencies for extended functionality:
+# rich>=13.0.0        # For enhanced terminal output (optional)
+# click>=8.0.0        # Alternative CLI framework (optional)
