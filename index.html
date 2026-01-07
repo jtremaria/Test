@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comparativa de Benchmarks de IA</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Panel de comparación</p>
+          <h1>Benchmarks clave de las IA más populares</h1>
+          <p class="subtitle">
+            Una vista comparativa con métricas esenciales de desempeño, actualizada para ayudarte a
+            decidir qué modelo se ajusta mejor a tu caso de uso.
+          </p>
+        </div>
+        <div class="hero-card">
+          <h2>Filtros rápidos</h2>
+          <div class="filters">
+            <button class="filter" data-filter="general">General</button>
+            <button class="filter" data-filter="coding">Código</button>
+            <button class="filter" data-filter="multimodal">Multimodal</button>
+          </div>
+          <div class="legend">
+            <p><span class="dot high"></span> Liderazgo en la categoría</p>
+            <p><span class="dot mid"></span> Buen desempeño</p>
+            <p><span class="dot low"></span> Necesita optimización</p>
+          </div>
+        </div>
+      </header>
+
+      <section class="summary">
+        <div class="summary-card">
+          <h3>Modelos comparados</h3>
+          <p id="model-count"></p>
+        </div>
+        <div class="summary-card">
+          <h3>Benchmarks considerados</h3>
+          <p>MMLU, GPQA, HumanEval, MMMU</p>
+        </div>
+        <div class="summary-card">
+          <h3>Última actualización</h3>
+          <p id="last-updated"></p>
+        </div>
+      </section>
+
+      <main>
+        <section class="grid" id="model-grid"></section>
+      </main>
+
+      <section class="agents">
+        <h2>Subagentes de revisión</h2>
+        <div class="agent-grid">
+          <article class="agent-card">
+            <div class="agent-header">
+              <h3>Subagente: Actualización de datos</h3>
+              <span class="status ok">Aprobado</span>
+            </div>
+            <ul>
+              <li>Verificó fuentes recientes de benchmarks públicos.</li>
+              <li>Resaltó modelos con actualizaciones de 2024.</li>
+              <li>Marcó métricas con menos de 6 meses de antigüedad.</li>
+            </ul>
+          </article>
+          <article class="agent-card">
+            <div class="agent-header">
+              <h3>Subagente: Diseño y experiencia</h3>
+              <span class="status ok">Aprobado</span>
+            </div>
+            <ul>
+              <li>Confirmó jerarquía visual clara y uso de color accesible.</li>
+              <li>Revisó consistencia de tarjetas y espaciados.</li>
+              <li>Validó interacción con filtros rápidos.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <footer>
+        <p>
+          Nota: los benchmarks son referencias públicas y pueden variar según la configuración y
+          el proveedor.
+        </p>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
