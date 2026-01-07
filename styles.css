@@ -149,6 +149,53 @@ h1 {
   margin-bottom: 8px;
 }
 
+.data-status {
+  margin-bottom: 32px;
+}
+
+.data-status-card {
+  align-items: center;
+  background: #11192b;
+  border: 1px solid rgba(120, 152, 255, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 12px 24px rgba(12, 18, 40, 0.25);
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  padding: 20px 24px;
+}
+
+.data-status-card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.data-status-card p {
+  color: #d2d8ff;
+  margin: 0;
+}
+
+.data-status-action {
+  background: #4c6fff;
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.data-status-action:hover {
+  box-shadow: 0 10px 20px rgba(76, 111, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.data-status .note {
+  margin-top: 12px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

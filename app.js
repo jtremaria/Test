@@ -89,6 +89,7 @@ const modelGrid = document.getElementById("model-grid");
 const modelCount = document.getElementById("model-count");
 const lastUpdated = document.getElementById("last-updated");
 const sourceCheck = document.getElementById("source-check");
+const dataStatusText = document.getElementById("data-status-text");
 const sortSelect = document.getElementById("sort-select");
 const filterButtons = document.querySelectorAll(".filter");
 
@@ -179,8 +180,10 @@ sortSelect.addEventListener("change", () => {
 });
 
 modelCount.textContent = `${models.length} modelos líderes`;
-lastUpdated.textContent = "Septiembre 2024";
-sourceCheck.textContent = "10 de septiembre de 2024";
+lastUpdated.textContent = "Pendiente de actualización reciente";
+sourceCheck.textContent = "Sin verificación automática";
+dataStatusText.textContent =
+  "Sin conexión a fuentes en vivo. Los benchmarks requieren una actualización para reflejar los últimos avances.";
 
 setActiveFilter("all");
 renderModels("all", sortSelect.value);
