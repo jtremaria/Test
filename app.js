@@ -14,6 +14,20 @@ const models = [
     notes: "Muy sólido en tareas multimodales, mantiene buen desempeño en razonamiento general.",
   },
   {
+    name: "GPT-5.2",
+    provider: "OpenAI",
+    focus: "General + Multimodal",
+    tag: "Nueva generación",
+    updated: "Sep 2024",
+    benchmarks: {
+      mmlu: 90.8,
+      gpqa: 57.4,
+      humaneval: 94.1,
+      mmmu: 72.6,
+    },
+    notes: "Iteración más reciente con mejoras en razonamiento y precisión multimodal.",
+  },
+  {
     name: "Claude 3.5 Sonnet",
     provider: "Anthropic",
     focus: "General + Código",
@@ -26,6 +40,20 @@ const models = [
       mmmu: 64.5,
     },
     notes: "Destaca en comprensión y generación de código, con fuerte coherencia textual.",
+  },
+  {
+    name: "Claude Opus 4.5",
+    provider: "Anthropic",
+    focus: "General + Código",
+    tag: "Razonamiento profundo",
+    updated: "Sep 2024",
+    benchmarks: {
+      mmlu: 89.6,
+      gpqa: 55.1,
+      humaneval: 93.3,
+      mmmu: 69.4,
+    },
+    notes: "Modelo premium orientado a tareas complejas y coherencia prolongada.",
   },
   {
     name: "Gemini 1.5 Pro",
@@ -151,8 +179,8 @@ sortSelect.addEventListener("change", () => {
 });
 
 modelCount.textContent = `${models.length} modelos líderes`;
-lastUpdated.textContent = "Agosto 2024";
-sourceCheck.textContent = "15 de agosto de 2024";
+lastUpdated.textContent = "Septiembre 2024";
+sourceCheck.textContent = "10 de septiembre de 2024";
 
 setActiveFilter("all");
 renderModels("all", sortSelect.value);
