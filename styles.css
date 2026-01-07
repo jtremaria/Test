@@ -175,6 +175,12 @@ h1 {
   margin: 0;
 }
 
+.data-status-card .note {
+  color: #a6b1ff;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
 .data-status-action {
   background: #4c6fff;
   border: none;

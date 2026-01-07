@@ -1,4 +1,4 @@
-const models = [
+let models = [
   {
     name: "GPT-4o",
     provider: "OpenAI",
@@ -90,8 +90,16 @@ const modelCount = document.getElementById("model-count");
 const lastUpdated = document.getElementById("last-updated");
 const sourceCheck = document.getElementById("source-check");
 const dataStatusText = document.getElementById("data-status-text");
+const dataStatusSource = document.getElementById("data-status-source");
+const dataStatusAction = document.querySelector(".data-status-action");
 const sortSelect = document.getElementById("sort-select");
 const filterButtons = document.querySelectorAll(".filter");
+
+const DEFAULT_LAST_UPDATED = "Pendiente de actualización reciente";
+const DEFAULT_SOURCE_CHECK = "Sin verificación automática";
+const DEFAULT_STATUS =
+  "Sin conexión a fuentes en vivo. Los benchmarks requieren una actualización para reflejar los últimos avances.";
+const STORAGE_KEY = "benchmarkSourceUrl";
 
 const benchmarkMeta = [
   { key: "mmlu", label: "MMLU", category: "general" },
@@ -117,6 +125,13 @@ const sortModels = (metricKey) => {
   return [...models].sort(
     (a, b) => b.benchmarks[metricKey] - a.benchmarks[metricKey]
   );
+};
+
+const setStatus = ({ statusText, sourceText, lastUpdatedText, sourceCheckText }) => {
+  dataStatusText.textContent = statusText;
+  dataStatusSource.textContent = sourceText;
+  lastUpdated.textContent = lastUpdatedText;
+  sourceCheck.textContent = sourceCheckText;
 };
 
 const renderModels = (filter = "general", sortKey = "mmlu") => {
@@ -160,6 +175,80 @@ const renderModels = (filter = "general", sortKey = "mmlu") => {
   });
 };
 
+const isValidModel = (model) => {
+  if (!model || typeof model !== "object") return false;
+  const requiredFields = ["name", "provider", "focus", "tag", "updated", "benchmarks"];
+  const hasFields = requiredFields.every((field) => field in model);
+  if (!hasFields) return false;
+  const benchmarks = model.benchmarks;
+  if (!benchmarks || typeof benchmarks !== "object") return false;
+  return benchmarkMeta.every((metric) => typeof benchmarks[metric.key] === "number");
+};
+
+const applyRemoteData = (data, sourceUrl) => {
+  if (!data || typeof data !== "object" || !Array.isArray(data.models)) {
+    throw new Error("Formato inválido: se esperaba { models: [...] }.");
+  }
+
+  const validModels = data.models.filter(isValidModel);
+  if (validModels.length === 0) {
+    throw new Error("No hay modelos válidos en el dataset.");
+  }
+
+  models = validModels;
+  modelCount.textContent = `${models.length} modelos líderes`;
+  setStatus({
+    statusText: "Datos en vivo conectados. Mostrando la última versión del origen.",
+    sourceText: `Fuente: ${sourceUrl}`,
+    lastUpdatedText: data.lastUpdated || new Date().toLocaleDateString("es-ES"),
+    sourceCheckText: data.sourceCheck || "Verificación automática activa",
+  });
+  const activeFilter = document.querySelector(".filter.active")?.dataset.filter ?? "all";
+  renderModels(activeFilter, sortSelect.value);
+};
+
+const fetchRemoteData = async (sourceUrl) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetch(sourceUrl, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`No se pudo cargar (${response.status}).`);
+    }
+    const data = await response.json();
+    applyRemoteData(data, sourceUrl);
+    localStorage.setItem(STORAGE_KEY, sourceUrl);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const connectSource = async () => {
+  const sourceUrl = window.prompt(
+    "Pega la URL del JSON de benchmarks (formato: { models: [...], lastUpdated, sourceCheck }):"
+  );
+  if (!sourceUrl) return;
+
+  setStatus({
+    statusText: "Conectando a la fuente en vivo...",
+    sourceText: `Fuente: ${sourceUrl}`,
+    lastUpdatedText: DEFAULT_LAST_UPDATED,
+    sourceCheckText: DEFAULT_SOURCE_CHECK,
+  });
+
+  try {
+    await fetchRemoteData(sourceUrl);
+  } catch (error) {
+    setStatus({
+      statusText: `No se pudo actualizar. ${error.message}`,
+      sourceText: `Fuente: ${sourceUrl}`,
+      lastUpdatedText: DEFAULT_LAST_UPDATED,
+      sourceCheckText: DEFAULT_SOURCE_CHECK,
+    });
+  }
+};
+
 const setActiveFilter = (selected) => {
   filterButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.filter === selected);
@@ -180,10 +269,26 @@ sortSelect.addEventListener("change", () => {
 });
 
 modelCount.textContent = `${models.length} modelos líderes`;
-lastUpdated.textContent = "Pendiente de actualización reciente";
-sourceCheck.textContent = "Sin verificación automática";
-dataStatusText.textContent =
-  "Sin conexión a fuentes en vivo. Los benchmarks requieren una actualización para reflejar los últimos avances.";
+setStatus({
+  statusText: DEFAULT_STATUS,
+  sourceText: "Fuente: sin conexión",
+  lastUpdatedText: DEFAULT_LAST_UPDATED,
+  sourceCheckText: DEFAULT_SOURCE_CHECK,
+});
 
 setActiveFilter("all");
 renderModels("all", sortSelect.value);
+
+dataStatusAction.addEventListener("click", connectSource);
+
+const storedSource = localStorage.getItem(STORAGE_KEY);
+if (storedSource) {
+  fetchRemoteData(storedSource).catch(() => {
+    setStatus({
+      statusText: DEFAULT_STATUS,
+      sourceText: "Fuente: sin conexión",
+      lastUpdatedText: DEFAULT_LAST_UPDATED,
+      sourceCheckText: DEFAULT_SOURCE_CHECK,
+    });
+  });
+}
